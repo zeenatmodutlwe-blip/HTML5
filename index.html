@@ -20,6 +20,569 @@
     <p>Here's a picture of a variety of quality sneakers you can choose to purchase at an affordable price:</p>
     <img src="https://Pinterest.com/200/300" alt="Sneaker">
     <p>Visit <a href="https://github.com">GitHub</a>to learn more about coding.</p>
+
+
+
+
+
+
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #f7f6f3;
+      --white: #ffffff;
+      --text: #1a1a1a;
+      --muted: #6b6b6b;
+      --border: rgba(0,0,0,0.10);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    /* ── SLIDESHOW WRAPPER ── */
+    .slideshow-wrapper {
+      width: 100%;
+      max-width: 520px;
+      background: var(--white);
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.10);
+    }
+
+    /* ── MAIN IMAGE AREA ── */
+    .main-slide-area {
+      position: relative;
+      width: 100%;
+      height: 380px;
+      background: var(--bg);
+      overflow: hidden;
+      cursor: grab;
+    }
+    .main-slide-area:active { cursor: grabbing; }
+
+    /* Glow background that changes per slide */
+    .slide-glow {
+      position: absolute; inset: 0;
+      transition: background 0.6s ease;
+      pointer-events: none;
+    }
+
+    /* Each slide */
+    .slide {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0;
+      transform: translateX(60px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+      pointer-events: none;
+    }
+    .slide.active {
+      opacity: 1;
+      transform: translateX(0);
+      pointer-events: all;
+    }
+    .slide.exit-left {
+      opacity: 0;
+      transform: translateX(-60px);
+    }
+
+    /* The shoe image / emoji inside each slide */
+    .slide-img {
+      font-size: 140px;
+      filter: drop-shadow(0 24px 32px rgba(0,0,0,0.14));
+      animation: floatImg 4s ease-in-out infinite;
+      user-select: none;
+      transition: transform 0.3s ease;
+    }
+    .slide-img:hover { transform: scale(1.06) rotate(-5deg); }
+    /* If using real images: */
+    .slide-img img {
+      width: 300px; height: 300px;
+      object-fit: contain;
+      filter: drop-shadow(0 24px 32px rgba(0,0,0,0.14));
+      animation: floatImg 4s ease-in-out infinite;
+    }
+
+    /* Slide label (e.g. "2 / 5") */
+    .slide-counter {
+      position: absolute;
+      top: 14px; right: 16px;
+      background: rgba(0,0,0,0.18);
+      color: #fff;
+      font-size: 11px; font-weight: 600;
+      padding: 4px 10px; border-radius: 20px;
+      backdrop-filter: blur(6px);
+      letter-spacing: 0.05em;
+    }
+
+    /* Badge on slide (e.g. NEW, SALE) */
+    .slide-badge {
+      position: absolute;
+      top: 14px; left: 16px;
+      font-size: 11px; font-weight: 700;
+      padding: 4px 10px; border-radius: 20px;
+    }
+    .badge-new  { background: #E6F1FB; color: #0C447C; }
+    .badge-sale { background: #fff0f0; color: #e24b4a; }
+    .badge-hot  { background: #FAECE7; color: #993C1D; }
+    .badge-ltd  { background: #F3ECF9; color: #6B3A9E; }
+
+    /* ── PREV / NEXT ARROWS ── */
+    .arrow {
+      position: absolute;
+      top: 50%; transform: translateY(-50%);
+      width: 38px; height: 38px;
+      background: rgba(255,255,255,0.88);
+      border: 0.5px solid var(--border);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; cursor: pointer; z-index: 10;
+      backdrop-filter: blur(6px);
+      transition: background 0.2s, transform 0.2s, opacity 0.2s;
+      opacity: 0;
+    }
+    .main-slide-area:hover .arrow { opacity: 1; }
+    .arrow:hover { background: var(--text); color: #fff; transform: translateY(-50%) scale(1.08); }
+    .arrow.prev { left: 12px; }
+    .arrow.next { right: 12px; }
+
+    /* ── AUTOPLAY PROGRESS BAR ── */
+    .progress-bar {
+      height: 3px;
+      background: rgba(0,0,0,0.08);
+      position: relative;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--text);
+      width: 0%;
+      transition: width linear;
+    }
+
+    /* ── INFO SECTION ── */
+    .slide-info {
+      padding: 1.25rem 1.5rem 0.5rem;
+      min-height: 56px;
+    }
+    .slide-name {
+      font-size: 18px; font-weight: 600;
+      transition: opacity 0.3s;
+    }
+    .slide-desc {
+      font-size: 13px; color: var(--muted);
+      margin-top: 3px;
+      transition: opacity 0.3s;
+    }
+    .slide-price-row {
+      display: flex; align-items: center; gap: 8px;
+      margin-top: 6px;
+    }
+    .slide-price { font-size: 20px; font-weight: 700; color: #e24b4a; }
+    .slide-old   { font-size: 13px; color: var(--muted); text-decoration: line-through; }
+    .slide-disc  { font-size: 12px; font-weight: 600; color: #e24b4a; }
+
+    /* ── THUMBNAIL STRIP ── */
+    .thumb-strip {
+      display: flex; gap: 8px; align-items: center;
+      padding: 0.75rem 1.5rem 1rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .thumb-strip::-webkit-scrollbar { display: none; }
+
+    .thumb {
+      width: 58px; height: 58px; flex-shrink: 0;
+      background: var(--bg);
+      border-radius: 10px;
+      border: 2px solid transparent;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 30px; cursor: pointer;
+      transition: border-color 0.2s, transform 0.2s, opacity 0.2s;
+      opacity: 0.55;
+      overflow: hidden;
+    }
+    .thumb img {
+      width: 100%; height: 100%; object-fit: contain;
+    }
+    .thumb:hover { opacity: 0.85; transform: scale(1.05); }
+    .thumb.active {
+      border-color: var(--text);
+      opacity: 1;
+      transform: scale(1.08);
+    }
+
+    /* ── DOT INDICATORS ── */
+    .dot-row {
+      display: flex; justify-content: center; gap: 6px;
+      padding-bottom: 1.25rem;
+    }
+    .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--border);
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s, width 0.3s;
+    }
+    .dot.active {
+      background: var(--text);
+      width: 20px;
+      border-radius: 4px;
+    }
+
+    /* ── PLAY/PAUSE BUTTON ── */
+    .controls-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 1.5rem 1rem;
+    }
+    .play-btn {
+      background: var(--bg); border: 0.5px solid var(--border);
+      border-radius: 30px; padding: 6px 14px;
+      font-size: 12px; font-weight: 500; cursor: pointer;
+      display: flex; align-items: center; gap: 6px;
+      transition: background 0.2s;
+    }
+    .play-btn:hover { background: #e8e6e2; }
+    .speed-btn {
+      background: var(--bg); border: 0.5px solid var(--border);
+      border-radius: 30px; padding: 6px 14px;
+      font-size: 12px; font-weight: 500; cursor: pointer;
+      transition: background 0.2s;
+    }
+    .speed-btn:hover { background: #e8e6e2; }
+
+    /* ── ANIMATIONS ── */
+    @keyframes floatImg {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-14px); }
+    }
+
+    @media (max-width: 560px) {
+      body { padding: 0; align-items: flex-start; }
+      .slideshow-wrapper { border-radius: 0; box-shadow: none; max-width: 100%; }
+      .main-slide-area { height: 300px; }
+      .slide-img { font-size: 100px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="slideshow-wrapper">
+
+  <!-- MAIN SLIDE AREA -->
+  <div class="main-slide-area" id="mainArea"
+       onmousedown="dragStart(event)" ontouchstart="touchStart(event)">
+
+    <!-- Glow background -->
+    <div class="slide-glow" id="slideGlow"></div>
+
+    <!--
+      ════════════════════════════════════════
+      YOUR SLIDES GO HERE
+      To use real images, replace the emoji span with:
+        <img src="your-shoe.png" alt="Shoe name" class="slide-img" />
+      ════════════════════════════════════════
+    -->
+    <div class="slide active" data-glow="#dce8f5">
+      <span class="slide-img">👟</span>
+    </div>
+    <div class="slide" data-glow="#d8e8cc">
+      <span class="slide-img">🥾</span>
+    </div>
+    <div class="slide" data-glow="#f5dce8">
+      <span class="slide-img">👠</span>
+    </div>
+    <div class="slide" data-glow="#cceee2">
+      <span class="slide-img">🩴</span>
+    </div>
+    <div class="slide" data-glow="#e8e0f5">
+      <span class="slide-img">🫧</span>
+    </div>
+
+    <!-- Slide badge -->
+    <div class="slide-badge badge-new" id="slideBadge">New</div>
+
+    <!-- Counter -->
+    <div class="slide-counter" id="slideCounter">1 / 5</div>
+
+    <!-- Arrows -->
+    <button class="arrow prev" onclick="prev()">‹</button>
+    <button class="arrow next" onclick="next()">›</button>
+  </div>
+
+  <!-- PROGRESS BAR -->
+  <div class="progress-bar">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+
+  <!-- SLIDE INFO -->
+  <div class="slide-info">
+    <div class="slide-name" id="slideName">Air Glide Pro</div>
+    <div class="slide-desc" id="slideDesc">Ultra-lightweight knit upper with responsive foam sole</div>
+    <div class="slide-price-row">
+      <span class="slide-price" id="slidePrice">$139</span>
+      <span class="slide-old"  id="slideOld">$179</span>
+      <span class="slide-disc" id="slideDisc">-22%</span>
+    </div>
+  </div>
+
+  <!-- THUMBNAIL STRIP -->
+  <div class="thumb-strip" id="thumbStrip"></div>
+
+  <!-- CONTROLS -->
+  <div class="controls-row">
+    <button class="play-btn" id="playBtn" onclick="togglePlay()">⏸ Pause</button>
+    <button class="speed-btn" id="speedBtn" onclick="cycleSpeed()">Speed: 3s</button>
+  </div>
+
+  <!-- DOTS -->
+  <div class="dot-row" id="dotRow"></div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+//  SLIDE DATA
+//  Add / edit your slides here
+// ═══════════════════════════════════════════
+const SLIDES = [
+  {
+    emoji: '👟',
+    name:  'Air Glide Pro',
+    desc:  'Ultra-lightweight knit upper with responsive foam sole',
+    price: '$139', old: '$179', disc: '-22%',
+    badge: 'New', badgeClass: 'badge-new',
+    glow:  '#dce8f5',
+  },
+  {
+    emoji: '🥾',
+    name:  'Trail Raven X',
+    desc:  'Waterproof membrane with aggressive grip outsole',
+    price: '$189', old: '$229', disc: '-17%',
+    badge: 'Hot', badgeClass: 'badge-hot',
+    glow:  '#d8e8cc',
+  },
+  {
+    emoji: '👠',
+    name:  'Velvet Edge',
+    desc:  'Suede upper with contrast sole — lifestyle perfected',
+    price: '$89',  old: '$120', disc: '-26%',
+    badge: 'Sale', badgeClass: 'badge-sale',
+    glow:  '#f5dce8',
+  },
+  {
+    emoji: '🩴',
+    name:  'Drift Slide',
+    desc:  'Cloud-soft EVA footbed with adjustable strap',
+    price: '$59',  old: '$79',  disc: '-25%',
+    badge: 'New',  badgeClass: 'badge-new',
+    glow:  '#cceee2',
+  },
+  {
+    emoji: '🫧',
+    name:  'Cloud Run 2',
+    desc:  'Dual-layer foam stack for maximum road cushioning',
+    price: '$219', old: '$259', disc: '-15%',
+    badge: 'Ltd',  badgeClass: 'badge-ltd',
+    glow:  '#e8e0f5',
+  },
+];
+
+// ═══════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════
+let current   = 0;
+let isPlaying = true;
+let delay     = 3000;
+let timer     = null;
+let dragStartX = null;
+
+const speeds = [2000, 3000, 5000];
+const speedLabels = ['2s', '3s', '5s'];
+let speedIdx = 1;
+
+// ═══════════════════════════════════════════
+//  BUILD THUMBNAILS & DOTS
+// ═══════════════════════════════════════════
+function buildUI() {
+  const thumbStrip = document.getElementById('thumbStrip');
+  const dotRow     = document.getElementById('dotRow');
+
+  SLIDES.forEach((s, i) => {
+    // Thumbnail
+    const t = document.createElement('div');
+    t.className = 'thumb' + (i === 0 ? ' active' : '');
+    t.textContent = s.emoji;
+    t.onclick = () => goTo(i);
+    thumbStrip.appendChild(t);
+
+    // Dot
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.onclick = () => goTo(i);
+    dotRow.appendChild(d);
+  });
+}
+
+// ═══════════════════════════════════════════
+//  GO TO SLIDE
+// ═══════════════════════════════════════════
+function goTo(idx, direction) {
+  const slides = document.querySelectorAll('.slide');
+  const thumbs = document.querySelectorAll('.thumb');
+  const dots   = document.querySelectorAll('.dot');
+
+  // Exit current
+  slides[current].classList.remove('active');
+  slides[current].classList.add('exit-left');
+  setTimeout(() => slides[current] && slides[current].classList.remove('exit-left'), 500);
+
+  current = (idx + SLIDES.length) % SLIDES.length;
+
+  // Enter new
+  slides[current].classList.add('active');
+
+  // Update thumbnails & dots
+  thumbs.forEach((t, i) => t.classList.toggle('active', i === current));
+  dots.forEach((d, i)   => d.classList.toggle('active', i === current));
+
+  // Scroll active thumb into view
+  thumbs[current].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+
+  // Update info
+  const s = SLIDES[current];
+  document.getElementById('slideName').textContent  = s.name;
+  document.getElementById('slideDesc').textContent  = s.desc;
+  document.getElementById('slidePrice').textContent = s.price;
+  document.getElementById('slideOld').textContent   = s.old;
+  document.getElementById('slideDisc').textContent  = s.disc;
+  document.getElementById('slideCounter').textContent = `${current + 1} / ${SLIDES.length}`;
+
+  const badge = document.getElementById('slideBadge');
+  badge.textContent = s.badge;
+  badge.className = 'slide-badge ' + s.badgeClass;
+
+  // Glow
+  document.getElementById('slideGlow').style.background =
+    `radial-gradient(circle at 55% 40%, ${s.glow} 0%, transparent 70%)`;
+
+  // Reset progress bar
+  restartProgress();
+}
+
+function next() { goTo(current + 1); }
+function prev() { goTo(current - 1); }
+
+// ═══════════════════════════════════════════
+//  AUTOPLAY
+// ═══════════════════════════════════════════
+function startAutoplay() {
+  clearTimeout(timer);
+  if (!isPlaying) return;
+  timer = setTimeout(() => { next(); }, delay);
+}
+
+function restartProgress() {
+  const fill = document.getElementById('progressFill');
+  fill.style.transition = 'none';
+  fill.style.width = '0%';
+  requestAnimationFrame(() => {
+    fill.style.transition = `width ${delay}ms linear`;
+    fill.style.width = '100%';
+  });
+  startAutoplay();
+}
+
+function togglePlay() {
+  isPlaying = !isPlaying;
+  const btn = document.getElementById('playBtn');
+  btn.textContent = isPlaying ? '⏸ Pause' : '▶ Play';
+  if (isPlaying) {
+    restartProgress();
+  } else {
+    clearTimeout(timer);
+    const fill = document.getElementById('progressFill');
+    // Freeze progress bar at current position
+    const computed = getComputedStyle(fill).width;
+    const pct = (parseFloat(computed) / fill.parentElement.offsetWidth * 100).toFixed(1);
+    fill.style.transition = 'none';
+    fill.style.width = pct + '%';
+  }
+}
+
+function cycleSpeed() {
+  speedIdx = (speedIdx + 1) % speeds.length;
+  delay = speeds[speedIdx];
+  document.getElementById('speedBtn').textContent = `Speed: ${speedLabels[speedIdx]}`;
+  restartProgress();
+}
+
+// ═══════════════════════════════════════════
+//  SWIPE / DRAG TO NAVIGATE
+// ═══════════════════════════════════════════
+function dragStart(e) {
+  dragStartX = e.clientX;
+  document.addEventListener('mouseup', dragEnd);
+}
+function touchStart(e) {
+  dragStartX = e.touches[0].clientX;
+  document.addEventListener('touchend', touchEnd);
+}
+function dragEnd(e) {
+  if (dragStartX === null) return;
+  const diff = dragStartX - e.clientX;
+  if (Math.abs(diff) > 40) diff > 0 ? next() : prev();
+  dragStartX = null;
+  document.removeEventListener('mouseup', dragEnd);
+}
+function touchEnd(e) {
+  if (dragStartX === null) return;
+  const diff = dragStartX - e.changedTouches[0].clientX;
+  if (Math.abs(diff) > 40) diff > 0 ? next() : prev();
+  dragStartX = null;
+  document.removeEventListener('touchend', touchEnd);
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') next();
+  if (e.key === 'ArrowLeft')  prev();
+  if (e.key === ' ') { e.preventDefault(); togglePlay(); }
+});
+
+// ═══════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════
+buildUI();
+// Set initial glow
+document.getElementById('slideGlow').style.background =
+  `radial-gradient(circle at 55% 40%, ${SLIDES[0].glow} 0%, transparent 70%)`;
+restartProgress();
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
   </main>
   <footer>
   <p>&copy;2025 Your Name</p>
