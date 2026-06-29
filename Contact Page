@@ -20,12 +20,7 @@
 
 
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Vars Kicks — Pick Your Pair</title>
+
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;900&display=swap');
 
@@ -480,8 +475,7 @@
 
 </div>
 
-</body>
-</html>
+
 
 
 
